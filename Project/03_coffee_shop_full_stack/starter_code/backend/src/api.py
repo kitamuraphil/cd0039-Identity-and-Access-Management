@@ -51,6 +51,18 @@ def get_drinks():
 '''
 
 
+@app.route('/drinks-detail', methods=['GET'])
+@requires_auth('get:drinks-detail')
+def get_drinks_detail(payload):
+    if request.method == "GET":
+        all_drinks = Drink.query.all()
+        drinks = [drink.long() for drink in all_drinks]
+        return jsonify({
+            'success': True,
+            'drinks': drinks
+        }), 200
+
+
 '''
 @TODO implement endpoint
     POST /drinks
