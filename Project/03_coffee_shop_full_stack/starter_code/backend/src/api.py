@@ -74,6 +74,34 @@ def get_drinks_detail(payload):
 '''
 
 
+@app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
+def post_drink(payload):
+    # if the method is POST
+    if request.method == "POST":
+        # get the data
+        body = request.get_json()
+        print(body)
+        try:
+            recipe = body['recipe']
+            if type(recipe) is dict:
+                recipe = [recipe]
+
+            title = body['title']
+            # create an instance and serialize recipe to str
+            drink = Drink(title=title, recipe=json.dumps(recipe))
+            drink.insert()
+            drinks = [drink.long()]
+
+            return jsonify({
+                'success': True,
+                'drinks': drinks
+            })
+
+        except:
+            abort(422)
+
+
 '''
 @TODO implement endpoint
     PATCH /drinks/<id>
@@ -85,6 +113,41 @@ def get_drinks_detail(payload):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+
+
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def patch_drink(payload, drink_id):
+    if request.method == "PATCH":
+        body = request.get_json()
+        print(body)
+
+        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+        if not drink:
+            abort(404)
+
+        try:
+            title = body.get('title', None)
+
+            recipe = body.get('recipe', None)
+
+            if title != None:
+                drink.title = title
+
+            if recipe != None:
+                drink.recipe = json.dumps(body['recipe'])
+
+            drink.update()
+
+            drinks = [drink.long()]
+
+            return jsonify({
+                'success': True,
+                'drinks': drinks
+            }), 200
+
+        except:
+            abort(422)
 
 
 '''
